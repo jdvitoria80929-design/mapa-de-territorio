@@ -1,11 +1,19 @@
-
-  workflows:
-  meu-primeiro-workflow: # ID do seu workflow
-    name: Build de Produção
-    instance_type: mac_mini_m2
-    max_build_duration: 60
+workflows:
+  default-workflow:
+    name: Compilar APK Android
+    max_build_duration: 30
+    instance_type: mac_mini_m1
+    environment:
+      flutter: stable
+      xcode: latest
     scripts:
       - name: Instalar dependências
-        script: npm install
-      - name: Executar testes
-        script: npm test
+        script: |
+          flutter pub get
+      - name: Construir APK (Release)
+        script: |
+          flutter build apk --release
+    artifacts:
+      - build/app/outputs/flutter-apk/app-release.apk
+
+  
