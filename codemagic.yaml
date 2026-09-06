@@ -1,8 +1,0 @@
-scripts:
-  - name: Flutter clean
-    script: flutter clean
-  - name: Get packages
-    script: flutter pub get
-  - name: Build AAB
-    script: flutter build appbundle --debug
-  
