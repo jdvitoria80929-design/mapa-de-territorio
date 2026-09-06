@@ -1,13 +1,13 @@
 workflows:
-  meu-novo-build:
-    name: Compilar APK Android Moderno
+  default-workflow:
+    name: Compilar APK Android
     max_build_duration: 30
     instance_type: mac_mini_m1
     environment:
       flutter: stable
       xcode: latest
     scripts:
-      - name: Gerar estrutura nativa Android moderna
+      - name: Criar estrutura Android moderna
         script: |
           flutter create . --org com.mapaterritorio.app --platforms android
       - name: Instalar dependências
@@ -18,3 +18,5 @@ workflows:
           flutter build apk --release
     artifacts:
       - build/app/outputs/flutter-apk/app-release.apk
+
+  
