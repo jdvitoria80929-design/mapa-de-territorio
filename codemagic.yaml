@@ -7,18 +7,14 @@ workflows:
       flutter: stable
       xcode: latest
     scripts:
-      - name: Inicializar projeto Flutter e gerar Android
+      - name: 1. Gerar estrutura Android nativa
         script: |
-          if [ ! -d "android" ]; then
-            flutter create . --org com.mapaterritorio.app --platforms android
-          fi
-      - name: Instalar dependências
+          flutter create . --org com.mapaterritorio.app --platforms android
+      - name: 2. Instalar dependências
         script: |
           flutter pub get
-      - name: Construir APK (Release)
+      - name: 3. Construir APK (Release)
         script: |
           flutter build apk --release
     artifacts:
       - build/app/outputs/flutter-apk/app-release.apk
-
-  
