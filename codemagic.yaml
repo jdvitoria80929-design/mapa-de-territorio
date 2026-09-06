@@ -14,8 +14,8 @@ workflows:
       - name: Instalar dependências
         script: |
           flutter pub get
-      - name: Construir APK (Release)
+      - name: Construir APK de Release Forçado
         script: |
-          flutter build apk --release
+          flutter build apk --release --no-pub
     artifacts:
       - build/app/outputs/flutter-apk/app-release.apk
