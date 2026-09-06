@@ -7,9 +7,9 @@ workflows:
       flutter: stable
       xcode: latest
     scripts:
-      - name: Forçar recriação completa da estrutura moderna
+      - name: Atualizar para a estrutura nativa moderna
         script: |
-          flutter create . --org com.mapaterritorio.app --platforms android --overwrite
+          flutter create . --org com.mapaterritorio.app --platforms android,ios
       - name: Instalar dependências
         script: |
           flutter pub get
