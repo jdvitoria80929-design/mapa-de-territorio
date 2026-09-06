@@ -7,8 +7,9 @@ workflows:
       flutter: stable
       xcode: latest
     scripts:
-      - name: Instalar dependências
+      - name: Criar estrutura nativa e dependências
         script: |
+          flutter create . --org com.mapaterritorio.app --platforms android
           flutter pub get
       - name: Construir APK (Release)
         script: |
@@ -16,4 +17,4 @@ workflows:
     artifacts:
       - build/app/outputs/flutter-apk/app-release.apk
 
-
+  
