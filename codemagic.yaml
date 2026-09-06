@@ -1,18 +1,8 @@
-workflows:
-  default-workflow:
-    name: Compilar APK Android
-    max_build_duration: 30
-    instance_type: mac_mini_m1
-    environment:
-      flutter: stable
-      xcode: latest
-    scripts:
-      - name: Limpar projeto e instalar dependências
-        script: |
-          flutter clean
-          flutter pub get
-      - name: Construir APK de Release
-        script: |
-          flutter build apk --release
-    artifacts:
-      - build/app/outputs/flutter-apk/app-release.apk
+scripts:
+  - name: Flutter clean
+    script: flutter clean
+  - name: Get packages
+    script: flutter pub get
+  - name: Build AAB
+    script: flutter build appbundle --debug
+  
