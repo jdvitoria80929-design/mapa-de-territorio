@@ -1,22 +1,11 @@
-workflows:
-  default-workflow:
-    name: Compilar APK Android
-    max_build_duration: 30
-    instance_type: mac_mini_m1
-    environment:
-      flutter: stable
-      xcode: latest
-    scripts:
-      - name: 1. Gerar estrutura Android nativa
-        script: |
-          flutter create . --org com.mapaterritorio.app --platforms android
-      - name: 2. Instalar dependências
-        script: |
-          flutter pub get
-      - name: 3. Construir APK (Release)
-        script: |
-          flutter build apk --release
-    artifacts:
-      - build/app/outputs/flutter-apk/app-release.apk
 
-  
+  workflows:
+  meu-primeiro-workflow: # ID do seu workflow
+    name: Build de Produção
+    instance_type: mac_mini_m2
+    max_build_duration: 60
+    scripts:
+      - name: Instalar dependências
+        script: npm install
+      - name: Executar testes
+        script: npm test
