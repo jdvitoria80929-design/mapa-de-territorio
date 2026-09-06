@@ -7,13 +7,12 @@ workflows:
       flutter: stable
       xcode: latest
     scripts:
-      - name: Instalar dependências
+      - name: Limpar projeto e instalar dependências
         script: |
+          flutter clean
           flutter pub get
-      - name: Construir APK (Release)
+      - name: Construir APK de Release
         script: |
           flutter build apk --release
     artifacts:
       - build/app/outputs/flutter-apk/app-release.apk
-
-  
