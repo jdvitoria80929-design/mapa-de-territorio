@@ -820,7 +820,6 @@ class _DetalheTerritorioScreenState extends State<DetalheTerritorioScreen> {
     );
   }
 }
-
 class ServicoDeCampoScreen extends StatefulWidget {
   const ServicoDeCampoScreen({super.key});
 
@@ -835,11 +834,19 @@ class _ServicoDeCampoScreenState extends State<ServicoDeCampoScreen> {
   ];
 
   late List<List<TextEditingController>> _controllers;
+  int? _ultimoMesCarregado;
 
   @override
   void initState() {
     super.initState();
+    _inicializarTabelaCompleta();
+  }
+
+  // Gera a matriz e já puxa os dados salvos do aparelho
+  Future<void> _inicializarTabelaCompleta() async {
+    _ultimoMesCarregado = AppDataStorage.dataSelecionadaGlobal.month - 1;
     _gerarControladores();
+    await _carregarDadosSalvos();
   }
 
   void _gerarControladores() {
@@ -874,6 +881,50 @@ class _ServicoDeCampoScreenState extends State<ServicoDeCampoScreen> {
     });
   }
 
+  // Chave única para salvar separadamente por mês, evitando conflitos
+  String get _chaveSharedPreferences => 'servico_campo_mes_${AppDataStorage.dataSelecionadaGlobal.month}';
+
+  Future<void> _salvarDados() async {
+    final prefs = await SharedPreferences.getInstance();
+    
+    List<Map<String, String>> dadosParaSalvar = [];
+    for (int i = 1; i < _controllers.length; i++) {
+      dadosParaSalvar.add({
+        'local': _controllers[i][2].text,
+        'horario': _controllers[i][3].text,
+        'dirigente': _controllers[i][4].text,
+      });
+    }
+
+    await prefs.setString(_chaveSharedPreferences, jsonEncode(dadosParaSalvar));
+
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Dados salvos com sucesso no aparelho!'),
+          backgroundColor: Colors.green,
+          duration: Duration(seconds: 2),
+        ),
+      );
+    }
+  }
+
+  Future<void> _carregarDadosSalvos() async {
+    final prefs = await SharedPreferences.getInstance();
+    final String? dadosString = prefs.getString(_chaveSharedPreferences);
+    
+    if (dadosString != null && mounted) {
+      final List decoded = jsonDecode(dadosString);
+      setState(() {
+        for (int i = 0; i < decoded.length && (i + 1) < _controllers.length; i++) {
+          _controllers[i + 1][2].text = decoded[i]['local'] ?? '';
+          _controllers[i + 1][3].text = decoded[i]['horario'] ?? '';
+          _controllers[i + 1][4].text = decoded[i]['dirigente'] ?? '';
+        }
+      });
+    }
+  }
+
   @override
   void dispose() {
     for (var row in _controllers) {
@@ -884,11 +935,28 @@ class _ServicoDeCampoScreenState extends State<ServicoDeCampoScreen> {
 
   @override
   Widget build(BuildContext context) {
-    _gerarControladores();
     int indiceMesAtual = AppDataStorage.dataSelecionadaGlobal.month - 1;
 
+    // Se o usuário mudou de mês pelo calendário, recarrega os dados específicos daquele mês
+    if (_ultimoMesCarregado != indiceMesAtual) {
+      _ultimoMesCarregado = indiceMesAtual;
+      _gerarControladores();
+      _carregarDadosSalvos();
+    }
+
     return Scaffold(
-      appBar: customAppBar(title: 'SERVIÇO DE CAMPO', context: context),
+      appBar: AppBar(
+        title: const Text('SERVIÇO DE CAMPO', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+        backgroundColor: const Color(0xFF1B365D),
+        iconTheme: const IconThemeData(color: Colors.white),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.save, color: Colors.white),
+            onPressed: _salvarDados,
+            tooltip: 'Salvar Alterações',
+          ),
+        ],
+      ),
       body: Column(
         children: [
           Padding(
@@ -1422,4 +1490,3 @@ class DashboardCard extends StatelessWidget {
     );
   }
 }
-
