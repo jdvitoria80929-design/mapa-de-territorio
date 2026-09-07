@@ -7,15 +7,15 @@ workflows:
       flutter: stable
       xcode: latest
     scripts:
-      - name: Forçar limpeza total da pasta android
+      - name: Limpeza profunda de arquivos nativos
         script: |
           rm -rf android
-      - name: Recriar plataforma Android limpa
+      - name: Gerar nova estrutura limpa
         script: |
           flutter create . --org com.mapaterritorio.app --platforms android
-      - name: Remover conflito de build.gradle legado
+      - name: Destruir qualquer vestígio de build.gradle obsoleto
         script: |
-          rm -f android/app/build.gradle
+          find android -name "build.gradle" -delete
       - name: Instalar dependências
         script: |
           flutter pub get
