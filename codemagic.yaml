@@ -1,19 +1,28 @@
 workflows:
-  meu-novo-build:
-    name: Compilar APK Android Moderno
+  build-apk-final:
+    name: Compilar APK Android
     max_build_duration: 30
     instance_type: mac_mini_m1
     environment:
       flutter: stable
       xcode: latest
     scripts:
-      - name: Limpar e criar estrutura nativa limpa
+      - name: Limpeza profunda de arquivos nativos
         script: |
-          flutter clean
+          rm -rf android
+      - name: Gerar nova estrutura limpa
+        script: |
           flutter create . --org com.mapaterritorio.app --platforms android
+      - name: Destruir qualquer vestígio de build.gradle obsoleto
+        script: |
+          find android -name "build.gradle" -delete
       - name: Instalar dependências
         script: |
           flutter pub get
+      - name: Injetar propriedades do Gradle
+        script: |
+          echo "flutterVersionCode=1" >> android/local.properties
+          echo "flutterVersionName=1.0.0" >> android/local.properties
       - name: Construir APK (Release)
         script: |
           flutter build apk --release
