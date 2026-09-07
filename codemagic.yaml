@@ -13,8 +13,14 @@ workflows:
       - name: Instalar dependências
         script: |
           flutter pub get
+      - name: Corrigir propriedades do Gradle
+        script: |
+          echo "flutterVersionCode=1" >> android/local.properties
+          echo "flutterVersionName=1.0.0" >> android/local.properties
       - name: Construir APK (Release)
         script: |
           flutter build apk --release
     artifacts:
       - build/app/outputs/flutter-apk/app-release.apk
+
+  
