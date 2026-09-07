@@ -1,6 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-import 'dart:convert';
 
 void main() {
   runApp(const MapaDoTerritorioApp());
@@ -844,7 +842,6 @@ class _ServicoDeCampoScreenState extends State<ServicoDeCampoScreen> {
     _inicializarTabelaCompleta();
   }
 
-  // Gera a matriz e já puxa os dados salvos do aparelho
   Future<void> _inicializarTabelaCompleta() async {
     _ultimoMesCarregado = AppDataStorage.dataSelecionadaGlobal.month - 1;
     _gerarControladores();
@@ -869,30 +866,38 @@ class _ServicoDeCampoScreenState extends State<ServicoDeCampoScreen> {
 
           if (colIndex == 1) return TextEditingController(text: diaSemanaStr);
           if (colIndex == 3) return TextEditingController(text: '08:30');
+          
+          // INTEGRAÇÃO COM A ABA DIRIGENTE (Coluna 4)
           if (colIndex == 4) {
-            String irmao = (diaSemanaStr == 'Sáb')
-                ? AppDataStorage.nomesSabado[contadorSab++ % AppDataStorage.nomesSabado.length]
-                : (diaSemanaStr == 'Dom')
-                    ? AppDataStorage.nomesDomingo[contadorDom++ % AppDataStorage.nomesDomingo.length]
-                    : AppDataStorage.nomesSegundaASexta[contadorSegSex++ % AppDataStorage.nomesSegundaASexta.length];
+            String irmao = '';
+            try {
+              irmao = (diaSemanaStr == 'Sáb')
+                  ? AppDataStorage.nomesSabado[contadorSab++ % AppDataStorage.nomesSabado.length]
+                  : (diaSemanaStr == 'Dom')
+                      ? AppDataStorage.nomesDomingo[contadorDom++ % AppDataStorage.nomesDomingo.length]
+                      : AppDataStorage.nomesSegundaASexta[contadorSegSex++ % AppDataStorage.nomesSegundaASexta.length];
+            } catch (e) {
+              irmao = 'Dirigente';
+            }
             return TextEditingController(text: irmao);
           }
+          
           return TextEditingController(text: '');
         }
       });
     });
   }
 
-  // Chave única para salvar separadamente por mês, evitando conflitos
   String get _chaveSharedPreferences => 'servico_campo_mes_${AppDataStorage.dataSelecionadaGlobal.month}';
 
+  // Função para salvar a coluna Local e os demais campos alterados
   Future<void> _salvarDados() async {
     final prefs = await SharedPreferences.getInstance();
     
     List<Map<String, String>> dadosParaSalvar = [];
     for (int i = 1; i < _controllers.length; i++) {
       dadosParaSalvar.add({
-        'local': _controllers[i][2].text,
+        'local': _controllers[i][2].text, // Salva o que foi digitado no Local
         'horario': _controllers[i][3].text,
         'dirigente': _controllers[i][4].text,
       });
@@ -903,7 +908,7 @@ class _ServicoDeCampoScreenState extends State<ServicoDeCampoScreen> {
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('Dados salvos com sucesso no aparelho!'),
+          content: Text('Dados do Serviço de Campo salvos com sucesso!'),
           backgroundColor: Colors.green,
           duration: Duration(seconds: 2),
         ),
@@ -911,6 +916,7 @@ class _ServicoDeCampoScreenState extends State<ServicoDeCampoScreen> {
     }
   }
 
+  // Carrega os dados salvos (garantindo que o Local digitado volte para a tela)
   Future<void> _carregarDadosSalvos() async {
     final prefs = await SharedPreferences.getInstance();
     final String? dadosString = prefs.getString(_chaveSharedPreferences);
@@ -919,9 +925,16 @@ class _ServicoDeCampoScreenState extends State<ServicoDeCampoScreen> {
       final List decoded = jsonDecode(dadosString);
       setState(() {
         for (int i = 0; i < decoded.length && (i + 1) < _controllers.length; i++) {
-          _controllers[i + 1][2].text = decoded[i]['local'] ?? '';
-          _controllers[i + 1][3].text = decoded[i]['horario'] ?? '';
-          _controllers[i + 1][4].text = decoded[i]['dirigente'] ?? '';
+          if (decoded[i]['local'] != null && decoded[i]['local'].isNotEmpty) {
+            _controllers[i + 1][2].text = decoded[i]['local'];
+          }
+          if (decoded[i]['horario'] != null && decoded[i]['horario'].isNotEmpty) {
+            _controllers[i + 1][3].text = decoded[i]['horario'];
+          }
+          // Se quiser que o dirigente salvo tenha prioridade sobre o automático, descomente a linha abaixo:
+          // if (decoded[i]['dirigente'] != null && decoded[i]['dirigente'].isNotEmpty) {
+          //   _controllers[i + 1][4].text = decoded[i]['dirigente'];
+          // }
         }
       });
     }
@@ -939,7 +952,6 @@ class _ServicoDeCampoScreenState extends State<ServicoDeCampoScreen> {
   Widget build(BuildContext context) {
     int indiceMesAtual = AppDataStorage.dataSelecionadaGlobal.month - 1;
 
-    // Se o usuário mudou de mês pelo calendário, recarrega os dados específicos daquele mês
     if (_ultimoMesCarregado != indiceMesAtual) {
       _ultimoMesCarregado = indiceMesAtual;
       _gerarControladores();
